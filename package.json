@@ -1,0 +1,12 @@
+{
+  "name": "nuvio-fasel-new",
+  "version": "1.0.0",
+  "description": "FaselHD Addon",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "stremio-addon-sdk": "^1.6.0"
+  }
+}
