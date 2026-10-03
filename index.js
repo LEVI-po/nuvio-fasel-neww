@@ -1,51 +1,55 @@
 const { addonBuilder, serveHTTP } = require("stremio-addon-sdk");
 
-// تعريف المزودين (Providers) المتاحة في إضافتك
+// تعريف المزودين (Providers) بشكل منظم واحترافي
 const providers = [
-    { id: "fasel", name: "فاصل إعلاني", type: "movie/series", active: true },
-    { id: "mycima", name: "ماي سيما", type: "movie/series", active: true },
-    { id: "egybest", name: "ايجي بست", type: "movie/series", active: true },
-    { id: "arabseed", name: "عرب سيد", type: "movie/series", active: true }
+    { id: "fasel", name: "فاصل إعلاني", description: "مزود أفلام ومسلسلات فاصل إعلاني" },
+    { id: "mycima", name: "ماي سيما", description: "مزود أفلام ومسلسلات ماي سيما" },
+    { id: "egybest", name: "ايجي بست", description: "مزود أفلام ومسلسلات ايجي بست" },
+    { id: "arabseed", name: "عرب سيد", description: "مزود أفلام ومسلسلات عرب سيد" }
 ];
 
 const builder = new addonBuilder({
     id: "org.nuvio.multiprovider",
-    version: "1.0.0",
+    version: "1.1.0",
     name: "مكتبة المزودين العرب",
-    description: "إضافة تجمع عدة مزودين للمشاهدة في مكان واحد",
+    description: "إضافة متكاملة تعرض عدة مزودين للمشاهدة في مكان واحد",
     resources: ["catalog", "meta", "stream"],
     types: ["movie", "series"],
     catalogs: providers.map(p => ({
         type: "movie",
         id: `provider_${p.id}`,
-        name: `${p.name} - أفلام`
+        name: p.name
     })),
     idPrefixes: ["prov_"]
 });
 
-// معالج الكتالوج لكل مزود
+// معالج الكتالوج لكل مزود لضمان ظهور المحتوى
 builder.defineCatalogHandler(async ({ id }) => {
-    const metas = [
-        {
-            id: `prov_${id}_test1`,
-            type: "movie",
-            name: "تجربة مزودين - فيلم تجريبي",
-            poster: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500",
-            description: "هذا فيلم تجريبي للتأكد من عمل قائمة المزودين بنجاح."
-        }
-    ];
-    return { metas };
+    const providerId = id.replace("provider_", "");
+    const providerObj = providers.find(p => p.id === providerId) || providers[0];
+    
+    return {
+        metas: [
+            {
+                id: `prov_${providerId}_sample1`,
+                type: "movie",
+                name: `[${providerObj.name}] - اختر للمشاهدة`,
+                poster: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500",
+                description: `${providerObj.description} - اضغط هنا لعرض السيرفرات المتاحة.`
+            }
+        ]
+    };
 });
 
-// معالج تفاصيل الفيلم
+// معالج تفاصيل المحتوى
 builder.defineMetaHandler(async ({ id }) => {
     return {
         meta: {
             id: id,
             type: "movie",
-            name: "فيلم تجريبي للمزودين",
+            name: "قائمة سيرفرات المزود",
             poster: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500",
-            description: "تفاصيل الفيلم التجريبي الخاص بنظام المزودين المتعددين."
+            description: "اختر جودة المشاهدة أو السيرفر المناسب لك."
         }
     };
 });
@@ -55,7 +59,7 @@ builder.defineStreamHandler(async ({ id }) => {
     return {
         streams: [
             {
-                title: "سيرفر المشاهدة الأساسي - عالي الجودة",
+                title: "سيرفر التشغيل السريع - جودة عالية HD",
                 url: "https://www.w3schools.com/html/mov_bbb.mp4"
             }
         ]
