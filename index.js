@@ -1,69 +1,60 @@
-const { addonBuilder, serveHTTP } = require("stremio-addon-sdk");
+const { addonBuilder, serveHTTP } = require('stremio-addon-sdk');
 
-// تعريف المزودين (Providers) بشكل منظم واحترافي
-const providers = [
-    { id: "fasel", name: "فاصل إعلاني", description: "مزود أفلام ومسلسلات فاصل إعلاني" },
-    { id: "mycima", name: "ماي سيما", description: "مزود أفلام ومسلسلات ماي سيما" },
-    { id: "egybest", name: "ايجي بست", description: "مزود أفلام ومسلسلات ايجي بست" },
-    { id: "arabseed", name: "عرب سيد", description: "مزود أفلام ومسلسلات عرب سيد" }
-];
+const manifest = {
+    "id": "org.nuvio.multiprovider",
+    "version": "1.1.0",
+    "name": "مكتبة المزودين العرب",
+    "description": "إضافة متكاملة تعرض عدة مزودين للمشاهدة في مكان واحد",
+    "resources": ["catalog", "meta", "stream"],
+    "types": ["movie", "series"],
+    "catalogs": [
+        { "type": "movie", "id": "provider_fasel", "name": "فاصل" },
+        { "type": "movie", "id": "provider_mycima", "name": "ماي سيما" },
+        { "type": "movie", "id": "provider_egybest", "name": "إيجي بست" },
+        { "type": "movie", "id": "provider_arabseed", "name": "عرب سيد" }
+    ],
+    "idPrefixes": ["prov_"]
+};
 
-const builder = new addonBuilder({
-    id: "org.nuvio.multiprovider",
-    version: "1.1.0",
-    name: "مكتبة المزودين العرب",
-    description: "إضافة متكاملة تعرض عدة مزودين للمشاهدة في مكان واحد",
-    resources: ["catalog", "meta", "stream"],
-    types: ["movie", "series"],
-    catalogs: providers.map(p => ({
-        type: "movie",
-        id: `provider_${p.id}`,
-        name: p.name
-    })),
-    idPrefixes: ["prov_"]
+const builder = new addonBuilder(manifest);
+
+// تعريف الكاتالوجات والأفلام الوهمية كمثال عشان تظهر وتشتغل الروابط
+builder.defineCatalogHandler(async ({ type, id }) => {
+    let metas = [];
+    if (id === "provider_fasel") {
+        metas = [
+            { id: "prov_1", type: "movie", name: "فيلم تجريبي - فاصل", poster: "https://via.placeholder.com/300x450" }
+        ];
+    } else if (id === "provider_mycima") {
+        metas = [
+            { id: "prov_2", type: "movie", name: "فيلم تجريبي - ماي سيما", poster: "https://via.placeholder.com/300x450" }
+        ];
+    }
+    return { metas };
 });
 
-// معالج الكتالوج لكل مزود لضمان ظهور المحتوى
-builder.defineCatalogHandler(async ({ id }) => {
-    const providerId = id.replace("provider_", "");
-    const providerObj = providers.find(p => p.id === providerId) || providers[0];
-    
-    return {
-        metas: [
-            {
-                id: `prov_${providerId}_sample1`,
-                type: "movie",
-                name: `[${providerObj.name}] - اختر للمشاهدة`,
-                poster: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500",
-                description: `${providerObj.description} - اضغط هنا لعرض السيرفرات المتاحة.`
-            }
-        ]
-    };
-});
-
-// معالج تفاصيل المحتوى
-builder.defineMetaHandler(async ({ id }) => {
+// تعريف معلومات الفيلم
+builder.defineMetaHandler(async ({ type, id }) => {
     return {
         meta: {
             id: id,
-            type: "movie",
-            name: "قائمة سيرفرات المزود",
-            poster: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500",
-            description: "اختر جودة المشاهدة أو السيرفر المناسب لك."
+            type: type,
+            name: "محتوى تجريبي للمزود",
+            description: "هذا محتوى تجريبي للتأكد من عمل الروابط والتشغيل بنجاح.",
+            poster: "https://via.placeholder.com/300x450"
         }
     };
 });
 
-// معالج روابط البث (Streams)
-builder.defineStreamHandler(async ({ id }) => {
-    return {
-        streams: [
-            {
-                title: "سيرفر التشغيل السريع - جودة عالية HD",
-                url: "https://www.w3schools.com/html/mov_bbb.mp4"
-            }
-        ]
-    };
+// تعريف روابط التشغيل (Streams) عشان يشتغل الفيلم معك 100%
+builder.defineStreamHandler(async ({ type, id }) => {
+    const streams = [
+        {
+            title: "سيرفر رئيسي - 1080p",
+            url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+        }
+    ];
+    return { streams };
 });
 
-serveHTTP(builder.getInterface(), { port: process.env.PORT || 7000 });
+serveHTTP(builder.interface, { port: process.env.PORT || 7000 });
