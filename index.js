@@ -1,60 +1,54 @@
 const { addonBuilder, serveHTTP } = require('stremio-addon-sdk');
 
 const manifest = {
-    "id": "org.nuvio.multiprovider",
-    "version": "1.1.0",
-    "name": "مكتبة المزودين العرب",
-    "description": "إضافة متكاملة تعرض عدة مزودين للمشاهدة في مكان واحد",
+    "id": "org.nuvio.arabicprovider",
+    "version": "1.0.0",
+    "name": "المزود العربي الشامل",
+    "description": "إضافة مخصصة لعرض الأفلام والمسلسلات العربية",
     "resources": ["catalog", "meta", "stream"],
     "types": ["movie", "series"],
     "catalogs": [
-        { "type": "movie", "id": "provider_fasel", "name": "فاصل" },
-        { "type": "movie", "id": "provider_mycima", "name": "ماي سيما" },
-        { "type": "movie", "id": "provider_egybest", "name": "إيجي بست" },
-        { "type": "movie", "id": "provider_arabseed", "name": "عرب سيد" }
+        { "type": "movie", "id": "arabic_movies", "name": "أفلام عربية وعالمية" }
     ],
-    "idPrefixes": ["prov_"]
+    "idPrefixes": ["arab_"]
 };
 
 const builder = new addonBuilder(manifest);
 
-// تعريف الكاتالوجات والأفلام الوهمية كمثال عشان تظهر وتشتغل الروابط
 builder.defineCatalogHandler(async ({ type, id }) => {
-    let metas = [];
-    if (id === "provider_fasel") {
-        metas = [
-            { id: "prov_1", type: "movie", name: "فيلم تجريبي - فاصل", poster: "https://via.placeholder.com/300x450" }
-        ];
-    } else if (id === "provider_mycima") {
-        metas = [
-            { id: "prov_2", type: "movie", name: "فيلم تجريبي - ماي سيما", poster: "https://via.placeholder.com/300x450" }
-        ];
-    }
-    return { metas };
+    return {
+        metas: [
+            {
+                id: "arab_1",
+                type: "movie",
+                name: "تجربة التشغيل - Big Buck Bunny",
+                poster: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=500"
+            }
+        ]
+    };
 });
 
-// تعريف معلومات الفيلم
 builder.defineMetaHandler(async ({ type, id }) => {
     return {
         meta: {
             id: id,
             type: type,
-            name: "محتوى تجريبي للمزود",
-            description: "هذا محتوى تجريبي للتأكد من عمل الروابط والتشغيل بنجاح.",
-            poster: "https://via.placeholder.com/300x450"
+            name: "تجربة التشغيل - Big Buck Bunny",
+            description: "هذا العنصر مخصص للتأكد من ربط السيرفر وتشغيل الفيديو بنجاح في تطبيق نوفي.",
+            poster: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=500"
         }
     };
 });
 
-// تعريف روابط التشغيل (Streams) عشان يشتغل الفيلم معك 100%
 builder.defineStreamHandler(async ({ type, id }) => {
-    const streams = [
-        {
-            title: "سيرفر رئيسي - 1080p",
-            url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-        }
-    ];
-    return { streams };
+    return {
+        streams: [
+            {
+                title: "سيرفر المشاهدة المباشرة (1080p)",
+                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+            }
+        ]
+    };
 });
 
 serveHTTP(builder.interface, { port: process.env.PORT || 7000 });
